@@ -36,8 +36,8 @@ class MainWindow(QMainWindow):
         # MENU BAR
         # Add Menu Bar
         self.file_menu_item = self.menuBar().addMenu("&File")
-        help_menu_item = self.menuBar().addMenu("&Help")
         self.edit_menu_item = self.menuBar().addMenu("&Edit")
+        help_menu_item = self.menuBar().addMenu("&Help")
 
         # File
         add_student_action = QAction(
@@ -50,6 +50,7 @@ class MainWindow(QMainWindow):
         help_menu_item.addAction(about_action)
         # only add if on mac
         about_action.setMenuRole(QAction.MenuRole.NoRole)
+        about_action.triggered.connect(self.about)
 
         # Edit
         search_action = QAction(QIcon('icons/search.png'), "Search", self)
@@ -127,6 +128,10 @@ class MainWindow(QMainWindow):
         dialog = DeleteDialog()
         dialog.exec()
 
+    def about(self):
+        dialog = AboutDialog()
+        dialog.exec()
+
 
 class InsertDialog(QDialog):
     """Dialog class for component-like rendering"""
@@ -178,6 +183,7 @@ class InsertDialog(QDialog):
         connection.commit()
         cursor.close()
         connection.close()
+        self.close()
         main_window.load_data()
 
 
@@ -186,7 +192,7 @@ class SearchDialog(QDialog):
         super().__init__()
         # Set Window title and size
         self.setWindowTitle("Search Student")
-        self.setFixedSize(300, 300)
+        self.setFixedSize(400, 200)
 
         # instantiate layout container
         layout = QVBoxLayout()
@@ -196,6 +202,14 @@ class SearchDialog(QDialog):
         self.student_name = QLineEdit()
         self.student_name.setPlaceholderText("Name")
         layout.addWidget(self.student_name)
+
+        # Label
+        warning_text = """
+        Please type the student's name exactly as in the table. 
+        (e.g John Smith)
+        """
+        warning_label = QLabel(warning_text)
+        layout.addWidget(warning_label)
 
         # Button
         self.search_btn = QPushButton("Search")
@@ -221,11 +235,17 @@ class SearchDialog(QDialog):
             name, Qt.MatchFlag.MatchFixedString)
 
         for item in items:
+            main_window.table.item(item.row(), 0).setSelected(True)
             main_window.table.item(item.row(), 1).setSelected(True)
+            main_window.table.item(item.row(), 2).setSelected(True)
+            main_window.table.item(item.row(), 3).setSelected(True)
 
         # Close DB connection
         cursor.close()
         connection.close()
+
+        # Close window
+        self.close()
 
 
 class EditDialog(QDialog):
@@ -343,6 +363,21 @@ class DeleteDialog(QDialog):
         confirmation_widget.setWindowTitle("Success")
         confirmation_widget.setText('The record was successfully deleted!')
         confirmation_widget.exec()
+
+
+class AboutDialog(QMessageBox):
+    def __init__(self):
+        super().__init__()
+
+        self.setWindowTitle("About")
+
+        content = """
+        A simple cross-platform GUI built with Python's PyQt6 library, following Ardit Sulce's instruction.
+
+        Feel free to use and edit as you see fit. 
+
+        """
+        self.setText(content)
 
 
 if __name__ == "__main__":
