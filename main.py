@@ -11,7 +11,24 @@ class MainWindow(QMainWindow):
         super().__init__()
         # WINDOW DETAILS
         self.setWindowTitle("Student Management System")
-        # self.setFixedSize(600, 500)
+        self.setMinimumSize(800, 600)
+
+        # CENTRAL TABLE WIDGET
+        # instantiate table class
+        self.table = QTableWidget()
+
+        # set column count
+        self.table.setColumnCount(4)
+
+        # set table headings
+        self.table.setHorizontalHeaderLabels(
+            ("ID", "Name", "Course", "Mobile"))
+
+        # remove index col
+        self.table.verticalHeader().setVisible(False)
+
+        # set table as central widget of the main window
+        self.setCentralWidget(self.table)
 
         # MENU BAR
         # Add Menu Bar
@@ -45,22 +62,30 @@ class MainWindow(QMainWindow):
         toolbar.addAction(add_student_action)
         toolbar.addAction(search_action)
 
-        # CENTRAL TABLE WIDGET
-        # instantiate table class
-        self.table = QTableWidget()
+        # STATUS BAR
+        self.status_bar = QStatusBar()
+        self.setStatusBar(self.status_bar)
 
-        # set column count
-        self.table.setColumnCount(4)
+        # Detect cell click
+        self.table.cellClicked.connect(self.cell_clicked)
 
-        # set table headings
-        self.table.setHorizontalHeaderLabels(
-            ("ID", "Name", "Course", "Mobile"))
+    def cell_clicked(self):
+        # Edit Button
+        edit_btn = QPushButton('Edit Record')
+        edit_btn.clicked.connect(self.click_edit_btn)
 
-        # remove index col
-        self.table.verticalHeader().setVisible(False)
+        # Delete Button
+        delete_btn = QPushButton('Delete Record')
+        delete_btn.clicked.connect(self.click_delete_btn)
 
-        # set table as central widget of the main window
-        self.setCentralWidget(self.table)
+        # Checks for existing edit/delete btns and clears them
+        children = self.findChildren(QPushButton)
+        if children:
+            for child in children:
+                self.status_bar.removeWidget(child)
+
+        self.status_bar.addWidget(edit_btn)
+        self.status_bar.addWidget(delete_btn)
 
     def load_data(self):
         # establist connection to the db
@@ -88,6 +113,14 @@ class MainWindow(QMainWindow):
 
     def search(self):
         dialog = SearchDialog()
+        dialog.exec()
+
+    def click_edit_btn(self):
+        dialog = EditDialog()
+        dialog.exec()
+
+    def click_delete_btn(self):
+        dialog = DeleteDialog()
         dialog.exec()
 
 
@@ -189,6 +222,14 @@ class SearchDialog(QDialog):
         # Close DB connection
         cursor.close()
         connection.close()
+
+
+class EditDialog(QDialog):
+    pass
+
+
+class DeleteDialog(QDialog):
+    pass
 
 
 if __name__ == "__main__":
