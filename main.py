@@ -13,14 +13,15 @@ class MainWindow(QMainWindow):
         self.setWindowTitle("Student Management System")
         # self.setFixedSize(600, 500)
 
+        # MENU BAR
         # Add Menu Bar
         self.file_menu_item = self.menuBar().addMenu("&File")
         help_menu_item = self.menuBar().addMenu("&Help")
         self.edit_menu_item = self.menuBar().addMenu("&Edit")
 
-        # SUB-ITEMS
         # File
-        add_student_action = QAction("Add Student", self)
+        add_student_action = QAction(
+            QIcon('icons/add.png'), "Add Student", self)
         add_student_action.triggered.connect(self.insert)
         self.file_menu_item.addAction(add_student_action)
 
@@ -31,9 +32,18 @@ class MainWindow(QMainWindow):
         about_action.setMenuRole(QAction.MenuRole.NoRole)
 
         # Edit
-        search_action = QAction("Search", self)
+        search_action = QAction(QIcon('icons/search.png'), "Search", self)
         self.edit_menu_item.addAction(search_action)
         search_action.triggered.connect(self.search)
+
+        # TOOLBAR
+        toolbar = QToolBar()
+        toolbar.setMovable(True)
+        self.addToolBar(toolbar)
+
+        # add functionality using previously set actions
+        toolbar.addAction(add_student_action)
+        toolbar.addAction(search_action)
 
         # CENTRAL TABLE WIDGET
         # instantiate table class
