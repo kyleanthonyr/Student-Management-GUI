@@ -1,9 +1,12 @@
 import typing
+from PyQt6 import QtCore
 from PyQt6.QtCore import Qt
 from PyQt6.QtWidgets import *
 from PyQt6.QtGui import *
 import sys
 import sqlite3
+
+from PyQt6.QtWidgets import QWidget
 
 
 class MainWindow(QMainWindow):
@@ -84,6 +87,7 @@ class MainWindow(QMainWindow):
             for child in children:
                 self.status_bar.removeWidget(child)
 
+        # Add buttons to status bar on cell click
         self.status_bar.addWidget(edit_btn)
         self.status_bar.addWidget(delete_btn)
 
@@ -144,7 +148,7 @@ class InsertDialog(QDialog):
 
         # Course Selection Widget
         self.course_name = QComboBox()
-        courses = ["Biology", "Chemistry", "Physics", "Math"]
+        courses = ["Biology", "Chemistry", "Physics", "Math", "Astronomy"]
         self.course_name.addItems(courses)
         layout.addWidget(self.course_name)
 
@@ -225,7 +229,70 @@ class SearchDialog(QDialog):
 
 
 class EditDialog(QDialog):
-    pass
+    def __init__(self):
+        super().__init__()
+
+        # Set window title and size
+        self.setWindowTitle("Edit Student Record")
+        self.setFixedSize(300, 300)
+
+        # initialize layout container
+        layout = QVBoxLayout()
+
+        # ADD STUDENT DIALOG BOX
+
+        # Get Index from Selected Row
+        index = main_window.table.currentRow()
+        self.student_id = main_window.table.item(index, 0).text()
+
+        # Student Name Widget
+        # Get student name from cell based on selected row index
+        name = main_window.table.item(index, 1).text()
+
+        self.student_name = QLineEdit(name)
+        self.student_name.setPlaceholderText('Name')
+        layout.addWidget(self.student_name)
+
+        # Course Selection Widget
+        # Get student course from cell based on selected row index
+        course = main_window.table.item(index, 2).text()
+
+        self.course_name = QComboBox()
+        courses = ["Biology", "Chemistry", "Physics", "Math", "Astronomy"]
+        self.course_name.addItems(courses)
+        self.course_name.setCurrentText(course)
+        layout.addWidget(self.course_name)
+
+        # Phone number Widget
+
+        # Get studen mobile from cell based on selected row index
+        mobile = main_window.table.item(index, 3).text()
+
+        self.mobile = QLineEdit(mobile)
+        self.mobile.setPlaceholderText('Mobile Number')
+        layout.addWidget(self.mobile)
+
+        # Submit button
+        button = QPushButton("Update")
+        button.clicked.connect(self.update_student)
+        layout.addWidget(button)
+
+        # show layout + widgets
+        self.setLayout(layout)
+
+    def update_student(self):
+        connection = sqlite3.connect('database.db')
+        cursor = connection.cursor()
+        cursor.execute(
+            "UPDATE students SET name = ?, course = ?, mobile = ? WHERE id = ?",
+            (self.student_name.text(),
+             self.course_name.itemText(self.course_name.currentIndex()),
+             self.mobile.text(),
+             self.student_id))
+        connection.commit()
+        cursor.close()
+        connection.close()
+        main_window.load_data()
 
 
 class DeleteDialog(QDialog):
