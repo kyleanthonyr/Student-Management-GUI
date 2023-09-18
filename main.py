@@ -296,7 +296,53 @@ class EditDialog(QDialog):
 
 
 class DeleteDialog(QDialog):
-    pass
+    def __init__(self):
+        super().__init__()
+
+        # Set Window title and size
+        self.setWindowTitle('Delete Record')
+
+        # Set container layout
+        layout = QGridLayout()
+
+        # Widgets
+        confirmation = QLabel("Are you sure you want to delete?")
+        yes_button = QPushButton('Yes')
+        no_button = QPushButton('No')
+
+        # Add widgets to layout
+        layout.addWidget(confirmation, 0, 0, 1, 2)
+        layout.addWidget(yes_button, 1, 0)
+        layout.addWidget(no_button, 1, 1)
+        self.setLayout(layout)
+
+        # Button functionality
+        yes_button.clicked.connect(self.delete_record)
+        no_button.clicked.connect(self.close)
+
+    def delete_record(self):
+        # Get record id for SQL query
+        index = main_window.table.currentRow()
+        student_id = main_window.table.item(index, 0).text()
+
+        # Delete record from database with SQL query
+        connection = sqlite3.connect("database.db")
+        cursor = connection.cursor()
+        cursor.execute("DELETE from students WHERE id = ?", (student_id,))
+
+        # Commit changes and close connections to db
+        connection.commit()
+        cursor.close()
+        connection.close()
+        main_window.load_data()
+
+        # Close current window after functionality completed
+        # and display success msg
+        self.close()
+        confirmation_widget = QMessageBox()
+        confirmation_widget.setWindowTitle("Success")
+        confirmation_widget.setText('The record was successfully deleted!')
+        confirmation_widget.exec()
 
 
 if __name__ == "__main__":
